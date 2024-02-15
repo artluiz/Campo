@@ -1,0 +1,15 @@
+{% extends "base.html" %} {% load crispy_forms_tags %} {% block page_title %}
+Atividades {% endblock page_title %} {% block content %} {% if atividade.pk %}
+<h1>Alterar Atividade</h1>
+{% else %}
+<h1>Nova Atividade</h1>
+{% endif %}
+
+<form method="POST" class="uniForm">
+  {% csrf_token%} {{form|crispy}}
+  <button type="submit" class="btn btn-primary btn-lg">Salvar</button>
+</form>
+
+<a href="{% url "atividade_list"%}" class="btn btn-secondary btn-lg"> Voltar</a>
+
+{% endblock content %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %} {% load static %}
+{% block content %} {% load tz %} 
+<style>
+  /* Exemplo de estilo básico, personalize conforme necessário */
+  body {
+    margin-right: 30px;
+    margin-left: 30px;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-size: 1.25em;
+  }
+
+  .cabecalho {
+    margin-right: 30px;
+    margin-left: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo-container {
+      margin-left: 30px;
+      display: flex;
+      align-items: center;
+      font-size: 1.5em;
+  }
+
+  .logo {
+      max-width: 200px;  /* Ajuste conforme necessário */
+      margin-right: 10px;  /* Espaço entre o logo e o texto "Controle de aplicações" */
+  }
+  
+  .info-container {
+      margin-left: 30px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;  /* Empilhe os elementos verticalmente */
+      align-items: center;
+  }
+
+  .numero-recomendacao,
+  .data-operacao {
+      margin-bottom: 5px;  /* Adicione um espaçamento entre os parágrafos */
+  }
+  
+  .info{
+    margin-top: 10px;
+    max-width: 1800px;
+    display: flex;
+  }
+  
+  .info p {
+    max-width: 500px;
+    margin: 0;
+    padding: 8px;
+  }
+
+  .info a {
+    min-width: 200px;
+    margin: 0;
+    padding: 8px;
+  }
+
+  .info2{
+    margin-top: 10px;
+    max-width: 1800px;
+    display: flex;
+  }
+
+  .info2 a {
+    min-width: 200px;
+    margin: 0;
+    padding: 8px;
+  }
+
+  .info2 a:first-child {
+    border-right: none;
+  }
+
+  .info2 a:last-child {
+    border-left: none;
+  }
+  .info a:last-child {
+    border-left: none;
+  }
+
+  #id_obs {
+    min-width: 300px;
+    padding: 12px 20px;
+    box-sizing: border-box;
+  }
+
+  table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        document.getElementById('campo1_{{ i }}').addEventListener('blur', function (e) {
+          e.target.value = parseFloat(e.target.value).toFixed(2); // limita para 2 casas decimais
+        });
+    </script>
+<body>
+  <div class="cabecalho">
+    <!-- Logo da empresa -->
+    <div class="logo-container" >
+      <img src="{% static '/todos/images/logo.jpeg' %}" alt="Logo da Empresa" class="logo">
+        <h1 style="font-size: 50px;">Controle de aplicações</h1>
+    </div>
+
+    <!-- Número da relação e data da operação -->
+    <div class="info-container">
+      <div class="numero-recomendacao" id="meuElemento" data-ficha-pk="{{ ficha.pk }}">
+          <h2>N ̊ da Recomendação: E{{ ficha.pk }}<h2/>
+      </div>
+      <div class="data-operacao">
+          <h2>Data da Operação: {{ ficha.data_criada|date:"d/m/Y H:i" }}</h2>
+      </div>
+  ' </div>
+</div>
+<form method="POST">
+  {% csrf_token %}
+  <div class="info">
+      <p>Atividade: <span id="visualizar_atividade">{{ ficha.atividade.nome }}</span></p>
+      <p>Tipo de Aplicação: <span id="visualizar_tipo_aplicacao">{{ ficha.tipo_aplicacao.nome_tipo }}</span></p>
+      <div >
+        <p>
+          Data da Aplicação: 
+          <span>{{ ficha.data_aplicada|date:'d-m-Y' }}</span>
+        </p>
+      </div>
+  </div>
+  <div style="display: flex;" >
+    <div class="info2" >
+        <table class="tabela-limitada">
+          <thead>
+              <tr>
+                  <th>#</th>
+                  <th>PL</th>
+                  <th>Cultura</th>
+                  <th style="min-width: 200px">Fazenda</th>
+                  <th>Pivo</th>
+                  <th>Area</th>
+                  <th>Area Aplicada</th>
+                  <th>L. Calda</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for ficha in ficha.plantio %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <span id="visualizar_plantio_{{ forloop.counter }}">{{ ficha.plantioSelect|default:'' }}</span>
+                        </td>
+                        <td><span id="id_cultura_{{ forloop.counter }}" name="id_cultura_{{ forloop.counter }}">{{ ficha.culturaSpan|default:'' }}</span></td>
+                        <td style="min-width: 200px"><span id="id_fazenda_{{ forloop.counter }}" name="id_fazenda_{{ forloop.counter }}">{{ ficha.fazendaSpan|default:'' }}</span></td>
+                        <td><span id="id_pivo_{{ forloop.counter }}" name="id_pivo_{{ forloop.counter }}">{{ ficha.pivoSpan|default:'' }}</span></td>
+                        <td><span id="id_area_{{ forloop.counter }}" name="id_area_{{ forloop.counter }}">{{ ficha.areaSpan|default:'' }}</span></td>
+                        <td><span id="id_areaAp_{{ forloop.counter }}" name="id_areaAp_{{ forloop.counter }}">{{ ficha.areaApInput|default:'' }}</span></td>
+                        <td><span id="calda_{{ forloop.counter }}" name="calda_{{ forloop.counter }}" readonly>
+                          {{ ficha.caldaInput|default:''|floatformat:2 }}
+                      </span></td>
+                    </tr>
+                {% endfor %}
+              <tr>
+                <td colspan="4"></td>
+                <td>Total:</td>
+                <td><span id="totalArea">{{ficha.totalArea}}</span></td>
+                <td><span id="totalAreaAplicada">{{ficha.totalAreaAp}}</span></td>
+                <td><span id="totalCalda">{{ficha.totalCalda}}</span></td>
+              </tr>
+          </tbody>
+        </table>
+        <div style="border: 1px solid black; margin-left: 100px; min-width:1000px; word-wrap: break-word;">
+          <p style="margin-top:12px;">
+              <span type="text" id="id_obs" placeholder="Regulagem...">
+                  {{ ficha.obs }}</span><br><br>
+          </p>
+      </div>
+    </div>
+  </div>
+  <div class="info">
+    <a>Vazão: <span type="numeric" id="volume" name="volume" value="">{{ ficha.volume }}</span>
+    </a>
+      <p> Capacidade do Tanque: <span type="numeric" id="cap" name="cap" value="">{{ ficha.capacidade }}</span>
+      </p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <td colspan="3" style = "border: none;"></td>
+        <td><span id="tqn1" name="tqn1" >{{ ficha.tqn1|floatformat:2|default:'-' }}</span></td>
+        <td><span id="tqn2" name="tqn2" >{{ ficha.tqn2|floatformat:2|default:'-' }}</span></td>
+        <td><span id="tqn3" name="tqn3" >{{ ficha.tqn3|floatformat:2|default:'-' }}</span></td>
+      </tr>
+    </thead>
+    <tbody>
+        <tr style = "background-color: #f2f2f2;">
+          <td>#</td>
+          <td>Produto</td>
+          <td>Dose(Kg ou L/Ha)</td>
+          <td>Tanque 01</td>
+          <td>Tanque 02</td>
+          <td>Tanque 03</td>
+          <td>Consumo Prev.(Kg ou L/Ha)</td>
+          <td>Consumo Total</td>
+        </tr>
+      {% for ficha in ficha.dados %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>
+          <span class="campo-selecao"> {{ ficha.nome_produto|default:'' }}{% if ficha.produto %} - ({{ ficha.produto }}){% endif %}</span>
+        </td>
+        <td>
+          <span>{{ ficha.dose|floatformat:2 }} {% if ficha.dose %}Kg ou L{% endif %}</span>
+        </td>
+        <td>
+          <span>{{ ficha.tanque1|floatformat:2 }} {% if ficha.tanque1 %}Kg ou L{% endif %}</span>
+        </td>
+        <td>
+          <span>{{ ficha.tanque2|floatformat:2 }} {% if ficha.tanque2 %}Kg ou L{% endif %}</span>
+        </td>
+        <td>
+          <span>{{ ficha.tanque3|floatformat:2 }} {% if ficha.tanque3 %}Kg ou L{% endif %}</span>
+        </td>
+        <td>
+          <span>{{ ficha.previsto|floatformat:2 }} {% if ficha.previsto %}Kg ou L{% endif %}</span>
+        </td>
+        <td>
+          <span>{{ ficha.total|floatformat:2 }}</span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+    <a href="{% url 'imprimir_ficha' pk=ficha.pk %}"class="btn btn-primary btn-lg mt-2" style="text-decoration:none">Imprimir</a>
+  
+    <a href="{% url "ficha_list"%}" class="btn btn-secondary btn-lg mt-2"> Voltar</a>
+</body>
+<script>
+        $(document).ready(function(){
+            $('input').on('keypress', function(e){
+                if(e.which == 13) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+{% endblock content %}

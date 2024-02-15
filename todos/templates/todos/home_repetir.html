@@ -1,0 +1,746 @@
+{% extends "base.html" %} {% load static %}
+{% block content %} {% load tz %} 
+    <style>
+      /* Exemplo de estilo básico, personalize conforme necessário */
+      body {
+        margin-right: 30px;
+        margin-left: 30px;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        font-size: 1.25em;
+      }
+
+      .cabecalho {
+        margin-right: 30px;
+        margin-left: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo-container {
+          margin-left: 30px;
+          display: flex;
+          align-items: center;
+          font-size: 1.5em;
+      }
+
+      .logo {
+          max-width: 200px;  /* Ajuste conforme necessário */
+          margin-right: 10px;  /* Espaço entre o logo e o texto "Controle de aplicações" */
+      }
+      
+      .info-container {
+          margin-left: 30px;
+          margin-top: 20px;
+          display: flex;
+          flex-direction: column;  /* Empilhe os elementos verticalmente */
+          align-items: center;
+      }
+
+      .numero-recomendacao,
+      .data-operacao {
+          margin-bottom: 5px;  /* Adicione um espaçamento entre os parágrafos */
+      }
+      
+      .info{
+        margin-top: 10px;
+        max-width: 1800px;
+        display: flex;
+      }
+      
+      .info p {
+        border: 1px solid black;
+        max-width: 500px;
+        margin: 0;
+        padding: 8px;
+      }
+
+      textarea {
+        background: white;
+        background-image: linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+        line-height: 1.5em;
+        border: none;
+        width: 100%;
+        height: 100%;
+        resize: none;
+        overflow: auto;
+    }
+
+      .info a {
+        color: red;
+        max-width: 1000px;
+        margin: 0;
+        padding: 8px;
+        font-size: 2em;
+      }
+
+      .info2{
+        margin-top: 10px;
+        max-width: 3000px;
+        display: flex;
+      }
+
+      .info2 a {
+        border: 1px solid black;
+        min-width: 200px;
+        margin: 0;
+        padding: 8px;
+      }
+
+      .info2 a:first-child {
+        border-right: none;
+      }
+
+      .info2 a:last-child {
+        border-left: none;
+      }
+      .info a:last-child {
+        border-left: none;
+      }
+
+      #id_obs {
+        padding: 12px 20px;
+        box-sizing: border-box;
+        border: 2px solid black;
+      }
+
+      table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+        
+      .tabela-limitada {
+        max-width: 400px; /* Ajuste este valor para a largura máxima desejada */
+        overflow-x: auto; /* Permite rolagem horizontal se a tabela for mais larga que a largura máxima */
+      }
+
+      .fazenda-col {
+        width: 200px; /* Ajuste este valor conforme necessário */
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+  </head>
+  <body>
+    <div class="cabecalho">
+        <!-- Logo da empresa -->
+        <div class="logo-container" >
+          <img src="{% static '/todos/images/logo.jpeg' %}" alt="Logo da Empresa" class="logo">
+            <h1 style="font-size: 50px;">Controle de aplicações</h1>
+        </div>
+
+        <!-- Número da relação e data da operação -->
+        <div class="info-container">
+          <div class="numero-recomendacao" id="meuElemento" data-ficha-pk="{{ ficha.pk }}">
+              <h2>N ̊ da Recomendação: E{{ pk_view }}<h2/>
+          </div>
+          <div class="data-operacao">
+              <h2>Data da Operação: {% now 'd/m/Y H:i' %}</h2>
+          </div>
+      ' </div>
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="info">
+          <p>Atividade: <select class="campo-selecao", id="id_atividade" required>
+            <option value={{ ficha.atividade.pk }}>{{ficha.atividade.nome}}</option>
+              {% for atividade in atividades %}
+                {% if atividade.ativo == 1 %}
+                  <option value={{ atividade.pk }}>{{ atividade.nome }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </p>
+            <p> Tipo de Aplicação: <select class="campo-selecao2", id="id_tipo_aplicacao" required>
+              <option value={{ ficha.tipo_aplicacao.pk }}>{{ficha.tipo_aplicacao.nome}}</option>
+                {% for tipo_aplicacao in tipos_aplicacao %}
+                  {% if tipo_aplicacao.ativo == 1 %}
+                    <option value={{ tipo_aplicacao.pk }}>{{ tipo_aplicacao.nome_tipo }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </p>
+            <p>Data da Aplicação<input type="date" id="data" value="{{ ficha.data_aplicada|date:'Y-m-d' }}"></p>
+      </div>
+      <div style="display: flex;" >
+        <div class="info2" >
+            <table class="tabela-limitada">
+              <thead>
+                  <tr>
+                      <th>#</th>
+                      <th>PL</th>
+                      <th>Cultura</th>
+                      <th style="min-width: 200px">Fazenda</th>
+                      <th>Pivo</th>
+                      <th>Area</th>
+                      <th>Area Aplicada</th>
+                      <th>L. Calda</th>
+                  </tr>
+              </thead>
+              <tbody>
+                {% for ficha in ficha.plantio %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+                      <td>
+                        <select class="campo-selecao2", id="id_plantio_{{ j }}" required>
+                          <option value="{{ ficha.plantioSelect|default:'' }}"data-area="{{ ficha.areaSpan }}" data-fazenda="{{ ficha.fazendaSpan|default:'' }}"
+                          data-pivo="{{ ficha.pivoSpan|default:'' }}" data-cultura="{{ ficha.culturaSpan|default:'' }}">{{ ficha.plantioSelect|default:'' }}</option>
+                          {% if ficha.plantioSelect %}
+                            <option value="" data-area="{{ "" }}" data-fazenda="{{ '' }}" data-pivo="{{ '' }}" data-cultura="{{ '' }}"></option>
+                          {% endif %}
+                          {% for plantio in plantios %}
+                            {% if plantio.nome_pl == ficha.plantioSelect %}{% else %}
+                              {% if plantio.ativo == 1 %}
+                                <option value={{ plantio.pk }} data-area="{{ plantio.area }}" data-fazenda="{{ plantio.fazenda }}"
+                                data-pivo="{{ plantio.pivo }}" data-cultura="{{ plantio.cultura }}">{{ plantio.nome_pl }}</option>
+                              {% endif %}
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                      </td>
+                      <td><span id="id_cultura_{{ forloop.counter }}" name="id_cultura_{{ forloop.counter }} ">{{ ficha.culturaSpan|default:'' }}</td>
+                      <td style="min-width: 200px"><span id="id_fazenda_{{ forloop.counter }}" name="id_fazenda_{{ forloop.counter }}">{{ ficha.fazendaSpan|default:'' }}</td>
+                      <td><span id="id_pivo_{{ forloop.counter }}" name="id_pivo_{{ forloop.counter }}">{{ ficha.pivoSpan|default:'' }}</td>
+                      <td><span id="id_area_{{ forloop.counter }}" name="id_area_{{ forloop.counter }}">{{ ficha.areaSpan|default:'' }}</td>
+                      <td><input type="number" step="any" id="id_areaAp_{{ forloop.counter }}" name="id_areaAp_{{ forloop.counter }}" value = {{ ficha.areaApInput|default:'' }} ></td>
+                      <td><input type="number" step="any" id="calda_{{ forloop.counter }}" name="calda_{{ forloop.counter }}" value = {{ ficha.caldaInput|default:'' }} readonly></td>
+                    </tr>
+                  {% endfor %}
+                  <tr>
+                    <td colspan="4"></td>
+                    <td>Total:</td>
+                    <td><span id="totalArea">{{ficha.totalArea}}</span></td>
+                    <td><span id="totalAreaAplicada">{{ficha.totalAreaAp}}</span></td>
+                    <td><span id="totalCalda">{{ficha.totalCalda}}</span></td>
+                  </tr>
+              </tbody>
+            </table>
+            <p style="margin-top:12px;margin-left: 100px; ">
+              <textarea id="id_obs" placeholder="Regulagem..." rows="4" cols="50">{{ ficha.obs }}</textarea><br><br>
+            </p>
+      </div>
+      </div>
+      <div class="info">
+        <p>Volume: <input type="numeric" id="volume" name="volume" value="{{ ficha.volume }}"></input>
+        </p>
+          <p> Capacidade do Tanque: <input type="numeric" id="cap" name="cap" value="{{ ficha.capacidade }}"></input>
+          </p>
+          <a> <span id="warn" name="warn"></span>
+          </a>
+      </div>
+      <div class="info">
+      </div>
+      <table class="tabela1">
+        <thead>
+          <tr>
+            <td colspan="3" style = "border: none;"></td>
+            <td><span id="tqn1" name="tqn1" >{{ ficha.tqn1 }}</span></td>
+            <td><span id="tqn2" name="tqn2" >{{ ficha.tqn2 }}</span></td>
+            <td><span id="tqn3" name="tqn3" >{{ ficha.tqn3 }}</span></td>
+          </tr>
+        </thead>
+        <tbody>
+            <tr style = "background-color: #f2f2f2;">
+              <td>#</td>
+              <td>Produto</td>
+              <td>Dose(Kg ou L/Ha)</td>
+              <td>Tanque 01</td>
+              <td>Tanque 02</td>
+              <td>Tanque 03</td>
+              <td>Consumo Prev.(Kg ou L/Ha)</td>
+              <td>Consumo Total</td>
+            </tr>
+          {% for ficha in ficha.dados %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+                <td>
+                  <select id="listaProdutos" class="campo-selecao" required> 
+                    <option value="{{ ficha.produto|default:'' }}">{{ ficha.nome_produto|default:'' }}{% if ficha.produto %} - ({{ ficha.produto }}){% endif %}</option>
+                    {% if ficha.produto %}<option value="" ></option>{% endif %}
+                    {% for produto in produtos %}
+                      {% if produto.ativo == 1 %}
+                      <option value={{ produto.codigo }} {% if selected %} hidden {% endif %}>{{ produto.produto }} - ({{ produto.codigo }})</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </td>
+              <td><input type="number" id="dose_{{ forloop.counter }}" value = {{ ficha.dose|default:'' }}></td>
+              <td><input type="number" id="tanque1_{{ forloop.counter }}" name="tanque1_{{ forloop.counter }}"  readonly></td>
+              <td><input type="number" id="tanque2_{{ forloop.counter }}" name="tanque2_{{ forloop.counter }}"  readonly></td>
+              <td><input type="number" id="tanque3_{{ forloop.counter }}" name="tanque3_{{ forloop.counter }}"  readonly></td>
+              <td><input type="number" id="previsto_{{ forloop.counter }}" name="previsto_{{ forloop.counter }}"  readonly></td>
+              <td><input type="number" id="total_{{ forloop.counter }}" value = {{ ficha.total|default:'' }}></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      
+      <a class="enviarDados btn btn-primary btn-lg mt-3" data-funcao="funcao1" href="#">Salvar e Imprimir</a>
+      <a class="enviarDados btn btn-secondary btn-lg mt-3" data-funcao="funcao2" href="#">Salvar e Repetir</a>
+      <a class="enviarDados btn btn-success btn-lg mt-3" data-funcao="funcao3" href="#">Salvar, Imprimir e Repetir</a>
+
+    </form>
+
+    <!-- Conteúdo da página continua aqui -->
+    
+    <script>
+      $('#listaProdutos').select2
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script defer>
+      $(document).ready(function () {
+        var tipoAplicacaoInput = document.getElementById('id_tipo_aplicacao');
+        tipoAplicacaoInput.addEventListener('change', function () {
+          updateCalda();
+        });
+
+        function updateCalda() {
+        var tipoAplicacao = tipoAplicacaoInput.value;
+          if(tipoAplicacao==1){
+            var volume = parseFloat($("#volume").val());
+            var capacidadeTanque = parseFloat($("#cap").val());
+      
+            camposDinamicos.forEach(function (area_apInput) {
+              var indice = area_apInput.id.split('_').pop();
+      
+              var row = $(area_apInput).closest("tr");
+              var caldaElement = row.find("[id='calda_" + indice + "']");
+      
+              var areaAplicada = parseFloat(area_apInput.value);
+              var calda = (areaAplicada * volume);
+      
+              caldaElement.val(calda.toFixed(2));
+      
+            });
+          }else{
+            camposDinamicos.forEach(function (area_apInput) {
+              var indice = area_apInput.id.split('_').pop();
+      
+              var row = $(area_apInput).closest("tr");
+              var caldaElement = row.find("[id='calda_" + indice + "']");
+
+              var areaAplicada = parseFloat(area_apInput.value);
+              var calda = (areaAplicada*0);
+      
+              caldaElement.val(calda.toFixed(2));
+      
+            });
+          }
+        }
+
+        var camposDinamicos = document.querySelectorAll('[id^="id_areaAp_"]');
+        camposDinamicos.forEach(function (area_apInput) {
+          area_apInput.addEventListener('input', function () {
+            updateCalda();
+            updateTotals();
+          });
+        });
+
+        $("#volume, #cap").on("input", function () {
+          updateCalda();
+          updateTotals();
+        });
+
+        function updateTotals() {
+          var totalArea = 0;
+          var totalAreaAplicada = 0;
+          var totalCalda = 0;
+
+          // Itere sobre as linhas da tabela
+          $("tbody tr").each(function () {
+            var row = $(this);
+            var areaElement = row.find("[id^='id_area_']");
+            var areaApElement = row.find("[id^='id_areaAp_']");
+            var caldaElement = row.find("[id^='calda_']");
+
+            var area = parseFloat(areaElement.text()) || 0; 
+            var areaAplicada = parseFloat(areaApElement.val()) || 0; 
+            var calda = parseFloat(caldaElement.val()) || 0; 
+
+            totalArea += area;
+            totalAreaAplicada += areaAplicada;
+            totalCalda += calda;
+          });
+
+          // Atualize os campos de totais diretamente nas linhas de totais
+          $("#totalArea").text(totalArea.toFixed(2));
+          $("#totalAreaAplicada").text(totalAreaAplicada.toFixed(2));
+          $("#totalCalda").text(totalCalda.toFixed(2));
+        }
+
+        // Adicione um ouvinte de evento de alteração para cada campo de seleção
+        $("select.campo-selecao2").on("change", function () {
+          // Obtenha o valor selecionado
+          var selectedValue = $(this).val();
+
+          // Obtenha os elementos relacionados a esta linha
+          var row = $(this).closest("tr");
+          var culturaElement = row.find("[id^='id_cultura_']");
+          var areaElement = row.find("[id^='id_area_']");
+          var fazendaElement = row.find("[id^='id_fazenda_']");
+          var pivoElement = row.find("[id^='id_pivo_']");
+          var aplicadaElement = row.find("[id^='id_areaAp_']");
+          var caldaElement = row.find("[id^='calda_']");
+
+          // Reset os valores para vazio se nada estiver selecionado
+          if (!selectedValue) {
+            culturaElement.text("");
+            areaElement.text("");
+            fazendaElement.text("");
+            pivoElement.text("");
+            aplicadaElement.val(0);
+            caldaElement.val(0);
+            updateTotals();
+            return;
+          }
+
+          // Obtenha os dados do plantio selecionado
+          var selectedPlantio = $("option:selected", this);
+
+          // Atualize os elementos com os dados do plantio
+          culturaElement.text(selectedPlantio.data("cultura"));
+          areaElement.text(parseFloat(selectedPlantio.data("area")).toFixed(2));
+          fazendaElement.text(selectedPlantio.data("fazenda"));
+          pivoElement.text(selectedPlantio.data("pivo"));
+          aplicadaElement.val(parseFloat(selectedPlantio.data("area")));
+          
+          
+
+          updateCalda();
+          updateTotals();
+        });
+      });
+
+
+      $(document).ready(function(){
+          $('input').on('keypress', function(e){
+              if(e.which == 13) {
+                  e.preventDefault();
+              }
+          });
+        });
+
+      document.addEventListener('DOMContentLoaded', function () {
+        var volumeInput = document.getElementById('cap');
+        var capInput = document.getElementById('volume');
+        var areaSpan = document.getElementById('totalAreaAplicada');
+        var caldaSpan = document.getElementById('totalCalda');
+        var tipoAplicacaoInput = document.getElementById('id_tipo_aplicacao');
+          
+        function handleInputChange() {
+          setTimeout(function() {
+            atualizarCampos(camposDinamicos);
+          }, 200);
+        }
+      
+        $("select.campo-selecao2").on("change", handleInputChange);
+      
+        $("input[id^='id_areaAp_']").on("input", handleInputChange);
+
+        $("input[id^='volume']").on("input", handleInputChange);
+
+        var camposDinamicos = document.querySelectorAll('[id^="tanque1_"]');
+
+        // Adiciona um ouvinte de evento para o campo de área
+        areaSpan.addEventListener('input', function () {
+          atualizarCampos(camposDinamicos);
+        });
+
+        // Adiciona um ouvinte de evento para o campo tipo_Aplicacao
+        tipoAplicacaoInput.addEventListener('change', function () {
+          atualizarCampos(camposDinamicos);
+        });
+
+        volumeInput.addEventListener('input', function () {
+          atualizarCampos(camposDinamicos);
+        });
+
+        capInput.addEventListener('input', function () {
+          atualizarCampos(camposDinamicos);
+        });
+
+        camposDinamicos.forEach(function (campo) {
+        var indice = campo.id.split('_')[1];
+
+        // Adiciona um ouvinte de evento para cada campo "dose_"
+        var doseInput = document.getElementById('dose_' + indice);
+          doseInput.addEventListener('input', function () {
+            atualizarCampos(camposDinamicos);
+          });
+        });
+          
+
+        function atualizarCampos(camposDinamicos) {
+          // Obtenha o valor da área
+          var area = parseFloat(areaSpan.innerText.replace(',', '.')) || 0;
+          var calda = parseFloat(caldaSpan.innerText.replace(',', '.')) || 0;
+          var volume = volumeInput.value;
+          var volumeValue = parseFloat(volume);
+          var tipoAplicacao = tipoAplicacaoInput.value;
+          
+          var veri = calda/volumeValue;
+
+          if (tipoAplicacao === '1') {
+              camposDinamicos.forEach(function (campo) {
+                // Extraia o índice do ID (por exemplo, campo1_1, campo1_2, etc.)
+                var indice = campo.id.split('_')[1];
+                if(document.getElementById('dose_' + indice).value){
+                  var dose = document.getElementById('dose_' + indice).value;
+                  var previsto = area * dose;
+                  if(veri >= 0 && veri <=1){
+                    var tqn1 = calda;
+                    var valorCampo1 = previsto; //exemplo de cálculo
+
+                    campo.value = parseFloat(valorCampo1).toFixed(2); // limita para 2 casas decimais
+                    $("#tqn1").text(tqn1.toFixed(2));
+                    $("#tqn2").text('-');
+                    $("#tqn3").text('-');
+                    $("#warn").text("");
+                    document.getElementById('tanque2_' + indice).value = "-";
+                    document.getElementById('tanque3_' + indice).value = "-";
+                    document.getElementById('previsto_' + indice).value = (previsto).toFixed(2);
+
+                  }else if(veri > 1 && veri <=2){
+                    var tqn1 = volumeValue;
+                    var tqn2 = calda - volumeValue;
+
+                    var d = (tqn2*previsto)/calda;
+                    var def = previsto - d;
+
+                    campo.value = parseFloat(def).toFixed(2); // limita para 2 casas decimais
+                    $("#tqn1").text(tqn1.toFixed(2));
+                    $("#tqn2").text(tqn2.toFixed(2));
+                    $("#tqn3").text('-');
+                    $("#warn").text("");
+                    document.getElementById('tanque2_' + indice).value = parseFloat(d).toFixed(2);
+                    document.getElementById('tanque3_' + indice).value = "-";
+                    document.getElementById('previsto_' + indice).value = (previsto).toFixed(2);
+
+                  }else if(veri >2 && veri <= 3){
+                    var tqn1 = volumeValue;
+                    var tqn2 = volumeValue;
+                    var tqn3 = calda - (volumeValue*2);
+
+                    var d = (tqn3*previsto)/calda;
+                    var def = previsto - d;
+
+                    campo.value = parseFloat(def/2).toFixed(2); // limita para 2 casas decimais
+                    $("#tqn1").text(tqn1.toFixed(2));
+                    $("#tqn2").text(tqn2.toFixed(2));
+                    $("#tqn3").text(tqn3.toFixed(2));
+                    $("#warn").text("");
+                    document.getElementById('tanque2_' + indice).value = parseFloat(def/2).toFixed(2);
+                    document.getElementById('tanque3_' + indice).value = parseFloat(d).toFixed(2);
+                    document.getElementById('previsto_' + indice).value = (previsto).toFixed(2);
+
+                  }else if(veri >3){
+                    calda = volumeValue*3;
+                    var tqn1 = volumeValue;
+                    var tqn2 = volumeValue;
+                    var tqn3 = volumeValue;
+
+                    $("#warn").text("Quantidade total não suportada pelos tanques");
+
+                    var d = (tqn3*previsto)/calda;
+                    var def = previsto - d;
+
+                    campo.value = parseFloat(def/2).toFixed(2); // limita para 2 casas decimais
+                    $("#tqn1").text(tqn1.toFixed(2));
+                    $("#tqn2").text(tqn2.toFixed(2));
+                    $("#tqn3").text(tqn3.toFixed(2));
+                    document.getElementById('tanque2_' + indice).value = parseFloat(def/2).toFixed(2);
+                    document.getElementById('tanque3_' + indice).value = parseFloat(d).toFixed(2);
+                    document.getElementById('previsto_' + indice).value = (previsto).toFixed(2);
+
+                  }
+                }
+              });
+            
+          } else {
+            camposDinamicos.forEach(function (campo) {
+              // Extraia o índice do ID (por exemplo, campo1_1, campo1_2, etc.)
+              var indice = campo.id.split('_')[1];
+              if(document.getElementById('dose_' + indice).value){
+
+              var dose = document.getElementById('dose_' + indice).value;
+              var valorAntiCamara = area * dose;  // Exemplo de cálculo para anti_camara
+              $("#tqn1").text('-');
+              $("#tqn2").text('-');
+              $("#tqn3").text('-');
+
+              // Atualize o campo anti_camara com o valor calculado
+              document.getElementById('tanque3_' + indice).value = '-';
+              document.getElementById('previsto_' + indice).value = (parseFloat(area) * parseFloat(dose)).toFixed(2);
+              campo.value = '-';
+              document.getElementById('tanque2_' + indice).value = '-';
+
+              }
+            });
+          }
+          
+        }
+      });
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script defer>
+      document.querySelectorAll('.enviarDados').forEach(function(link) {
+        var clickHandler = function (event) {
+          event.preventDefault(); // Evita que o link seja seguido imediatamente
+
+          var totalareaSpan = document.getElementById('totalArea');
+          var totalareaApSpan = document.getElementById('totalAreaAplicada');
+          var totalcaldaSpan = document.getElementById('totalCalda');
+          
+          // Crie um array para armazenar os dados das linhas preenchidas da tabela
+          var dados_tabela = [];
+          var dados_tabela2 = [];
+
+          // Itere sobre as linhas da tabela
+          $('table.tabela1 tbody tr').each(function () {
+            var linha = $(this);
+
+            // Colete os valores dos campos na linha atual
+            var produto = linha.find('select option:selected').val();
+            var dose = linha.find('input[id^="dose_"]').val();
+            var tanque1 = linha.find('input[id^="tanque1_"]').val();
+            var tanque2 = linha.find('input[id^="tanque2_"]').val();
+            var tanque3 = linha.find('input[id^="tanque3_"]').val();
+            var previsto = linha.find('input[id^="previsto_"]').val();
+            var total = linha.find('input[id^="total_"]').val();
+
+            // Adicione os dados da linha ao array
+            if (produto || dose) {
+              dados_tabela.push({
+                produto: produto,
+                dose: dose,
+                tanque1: tanque1,
+                tanque2: tanque2,
+                tanque3: tanque3,
+                previsto: previsto,
+                total: total
+              });
+            }
+          });
+
+          var teste = '';
+
+          $('table.tabela-limitada tbody tr').each(function () {
+            var linha = $(this);
+
+            // Colete os valores dos campos na linha atual
+            var plantioSelect = linha.find('select option:selected').text();
+            if(teste === plantioSelect && plantioSelect != ''){
+              $("#warn").text("Selecione plantios diferentes");
+            }else{
+              teste = plantioSelect;
+            }
+            var culturaSpan = linha.find('[id^="id_cultura_"]').text();
+            var fazendaSpan = linha.find('[id^="id_fazenda_"]').text();
+            var pivoSpan = linha.find('[id^="id_pivo_"]').text();
+            var areaSpan = linha.find('[id^="id_area_"]').text();
+            var areaApInput = linha.find('[id^="id_areaAp_"]').val();
+            var caldaInput = linha.find('[id^="calda_"]').val();
+
+            // Adicione os dados da linha ao array
+            if (plantioSelect && plantioSelect != "") {
+              dados_tabela2.push({
+                plantioSelect: plantioSelect,
+                culturaSpan: culturaSpan,
+                fazendaSpan: fazendaSpan,
+                pivoSpan: pivoSpan,
+                areaSpan: areaSpan,
+                areaApInput: areaApInput,
+                caldaInput: caldaInput
+              });
+            }
+          });
+
+          // Colete os valores das quatro variáveis
+          var atividade_id = $('#id_atividade option:selected').val();
+          var totalArea = parseFloat(totalareaSpan.innerText.replace(',', '.'));
+          var totalAreaAp = parseFloat(totalareaApSpan.innerText.replace(',', '.'));
+          var totalCalda = parseFloat(totalcaldaSpan.innerText.replace(',', '.'));
+          var aplicacao_id = $('#id_tipo_aplicacao option:selected').val();
+          var tqn1 = parseFloat(document.getElementById('tqn1').innerText.replace(',', '.'));
+          var tqn2 = parseFloat(document.getElementById('tqn2').innerText.replace(',', '.'));
+          var tqn3 = parseFloat(document.getElementById('tqn3').innerText.replace(',', '.'));
+          var volume = $('#volume').val();
+          var cap = $('#cap').val();
+          var obs = $('#id_obs').val();
+          var data1 = $('#data').val();
+
+          // Crie um objeto de dados com as quatro variáveis e a tabela
+          var dados = {
+            atividade_id: atividade_id,
+            totalArea: totalArea,
+            totalAreaAp: totalAreaAp,
+            totalCalda: totalCalda,
+            tqn1: tqn1,
+            tqn2: tqn2,
+            tqn3: tqn3,
+            data1: data1,
+            aplicacao_id: aplicacao_id,
+            volume: volume,
+            cap: cap,
+            dados_tabela: dados_tabela,
+            dados_tabela2: dados_tabela2,
+            obs: obs,
+          };
+          var confirm = document.getElementById('warn').innerText;
+
+          if(confirm===''){
+            $.ajax({
+              url: "{% url 'receber_dados' %}",
+              type: 'post',
+              data: JSON.stringify(dados),
+              contentType: 'application/json',
+              dataType: 'json',
+              success: function(data){
+                link.removeEventListener('click', clickHandler); // Remove o ouvinte de eventos
+                var funcao = link.getAttribute('data-funcao');
+                if (funcao === "funcao1") {
+                  link.href = "{% url 'imprimir_ficha' pk=pk_view %}";
+                  link.target = "_blank";
+                  link.href = "{% url 'home_page' %}";
+                  link.target = "_self";
+                  link.click();
+                } else if (funcao === "funcao2") {
+                  link.href = "{% url 'ficha_repetir' pk=pk_view %}";
+                  link.target = "_self";
+                  link.click();
+                } else if (funcao === "funcao3") {
+                  link.href = "{% url 'imprimir_ficha' pk=pk_view %}";
+                  link.target = "_blank";
+                  link.click();
+                  link.href = "{% url 'ficha_repetir' pk=pk_view %}";
+                  link.target = "_self";
+                  link.click();
+                }
+              },
+              error: function (error) {
+                console.error(error);
+                // Adicione lógica para lidar com erros, se necessário
+              }
+            });
+        }
+      };
+
+      link.addEventListener('click', clickHandler);
+    });
+    </script>
+  </body>
+
+{% endblock content %}

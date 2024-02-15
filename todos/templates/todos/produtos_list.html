@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block page_title %} Produtos {% endblock page_title %}
+
+{% block content %}
+    <style>
+      th {
+        text-align: center;
+      }
+      td {
+        text-align: center;
+      }
+    </style>
+    <form action="{% url 'upload_excel' %}" method="post" enctype="multipart/form-data" class=" form-control-lg">
+      {% csrf_token %}
+          <label for="formFileLg" class="form-label" >Importar Produtos do Excel</label>
+        <div class="input-group" style="font-size: 1.25em;">
+          <input type="file" class="form-control" id="inputExcel" name="inputExcel" aria-describedby="inputExcel" aria-label="Upload" style="min-width: 210px; max-width: 600px;">
+          <button class="btn btn-outline-secondary" type="submit" id="inputFile">Button</button>
+        </div>
+    </form>
+    {% if produtos_list %}
+    
+    <table class="table fs-5">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col" style="text-align: left">Nome do Produto</th>
+          <th scope="col">Codigo</th>
+          <th scope="col" style="text-align: left">Descrição</th>
+          <th scope="col">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for produto in produtos_list %}
+        <tr>
+          <th scope="row">{{ produto.pk }}</th>
+          <td style="text-align: left">{{ produto.produto }}</td>
+          <td>{{ produto.codigo }}</td>
+          <td style="text-align: left">{{ produto.descricao }}</td>
+          <td>
+            <label for="btn-edit_{{ forloop.counter }}" class="btn btn-secondary">
+                Editar
+                <input type="button" onclick="location.href='{% url 'produtos_update' pk=produto.pk %}';" id="btn-edit_{{ forloop.counter }}" style="display: none;">
+            </label>
+
+            <input type="checkbox" class="btn-check" id="btn-check_{{ forloop.counter }}" data-item-id="{{ produto.pk }}" {% if produto.ativo %}checked{% endif %}>
+            <label class="btn {% if produto.ativo %}btn-danger{% else %}btn-success{% endif %}" id="btn-label_{{ produto.pk }}" for="btn-check_{{ forloop.counter }}">{% if produto.ativo %} Cancelar {% else %}Ativar{% endif %}</label>
+          
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>Não há Produtos cadastradas</p>
+    {% endif %}
+    
+    <a href="{% url "produtos_create"%}" class="btn btn-primary btn-lg"> Cadastrar produto</a>
+
+    
+
+    <script>
+      $(document).ready(function () {
+        $('.btn-check').change(function() {
+          var checkbox = $(this);
+          var pk = checkbox.data('item-id');
+          var label = $("#btn-label_" + pk);  // Obtemos o elemento label correspondente
+
+          $.ajax({
+            url: '/produto/toggle/' + pk,
+            type: 'post',
+            data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+            dataType: 'json',
+            success: function (data) {
+              // Atualizar interface do usuário conforme necessário
+              console.log('Status: sucesso');
+              checkbox.prop('checked', data.ativo);
+
+              // Alterar a cor do botão
+              if (data.ativo) {
+                label.removeClass('btn-success').addClass('btn-danger');
+                label.text(' Cancelar ');
+              } else {
+                label.removeClass('btn-danger').addClass('btn-success');
+                label.text('Ativar');
+              }
+            },
+            error: function (data) {
+              console.log('Erro:', data);
+            }
+          });
+        });
+      });
+    </script>
+  {% endblock content %}
+    

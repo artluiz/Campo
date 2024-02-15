@@ -1,0 +1,275 @@
+{% load static %}
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block page_title %}{% endblock page_title %}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+  </head>
+</html>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-size: 1.73em;
+  }
+
+  .cabecalho {
+    padding-left:500px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: -20px;
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .logo {
+    max-width: 200px;
+    margin-right: 10px;
+  }
+  .ass {
+    max-width: 150%;
+    margin-right: 10px;
+  }
+
+  .info-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .assinatura {
+    margin-top: 20px;
+    width:100%;
+  }
+
+  .numero-recomendacao,
+  .data-operacao {
+    margin-bottom: 5px;
+  }
+
+  a {
+    /*font-size: 24px;*/
+  }
+
+  .info{
+    margin-top: -5px;
+    max-width: 1600px;
+    display: flex;
+  }
+
+  .info p {
+    min-width: 200px;
+    margin: 0;
+    padding: 8px;
+  }
+
+  .info2{
+    margin-top: 5px;
+    max-width: 1600px;
+    display: flex;
+  }
+
+  .info2 p {
+    min-width: 200px;
+    margin: 0;
+    padding: 8px;
+  }
+
+  .info2 p:first-child {
+    border-right: none;
+  }
+
+  .info2 p:last-child {
+    border-left: none;
+  }
+
+  .campo-selecao {
+    margin-top: 5px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 1.05em;
+  }
+
+  th,
+  td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: center;
+    
+  }
+
+  th {/**/
+    background-color: #f2f2f2;
+  }
+
+  .tabela1{
+    margin-top: -10px;
+  }
+</style>
+<body class="container-fluid" onload="window.print()">
+  <div class="cabecalho">
+    <!-- Logo da empresa -->
+    <div class="logo-container" >
+      <img src="{% static '/todos/images/logo.jpeg' %}" alt="Logo da Empresa" class="logo">
+        <h1 style="font-size: 50px;">Controle de aplicações</h1>
+    </div>
+
+    <!-- Número da relação e data da operação -->
+    <div class="info-container">
+      <div class="numero-recomendacao" id="meuElemento" data-ficha-pk="{{ ficha.pk }}">
+          <h2>N ̊ da Recomendação: E{{ ficha.pk }}<h2/>
+      </div>
+      <div class="data-operacao" style="font-size:1.05em">
+          <h2>
+            <strong>Data da Aplicação: 
+            <span>{{ ficha.data_aplicada|date:'d-m-Y' }}</span></strong></h2>
+      </div>
+  ' </div>
+</div>
+<form method="POST">
+  {% csrf_token %}
+  <div class="info">
+      <p>Atividade: <span id="visualizar_atividade">{{ ficha.atividade.nome }}</span></p>
+      <p>Tipo de Aplicação: <span id="visualizar_tipo_aplicacao">{{ ficha.tipo_aplicacao.nome_tipo }}</span></p>
+  </div>
+  <div style="display: flex;" >
+    <div class="info2" >
+        <table class="tabela-limitada">
+          <thead>
+              <tr>
+                  <th>#</th>
+                  <th>PL</th>
+                  <th>Cultura</th>
+                  <th style="min-width: 200px">Fazenda</th>
+                  <th>Pivo</th>
+                  <th>Area(Ha)</th>
+                  <th>Area Aplicada</th>
+                  <th>Calda(L)</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for ficha in ficha.plantio %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <span id="visualizar_plantio_{{ forloop.counter }}">{{ ficha.plantioSelect|default:'' }}</span>
+                        </td>
+                        <td><span id="id_cultura_{{ forloop.counter }}" name="id_cultura_{{ forloop.counter }}">{{ ficha.culturaSpan|default:'' }}</span></td>
+                        <td style="min-width: 200px"><span id="id_fazenda_{{ forloop.counter }}" name="id_fazenda_{{ forloop.counter }}">{{ ficha.fazendaSpan|default:'' }}</span></td>
+                        <td><span id="id_pivo_{{ forloop.counter }}" name="id_pivo_{{ forloop.counter }}">{{ ficha.pivoSpan|default:'' }}</span></td>
+                        <td><span id="id_area_{{ forloop.counter }}" name="id_area_{{ forloop.counter }}">{{ ficha.areaSpan|default:''|floatformat:2 }}</span></td>
+                        <td><span id="id_areaAp_{{ forloop.counter }}" name="id_areaAp_{{ forloop.counter }}">{{ ficha.areaApInput|floatformat:2|default:'' }}</span></td>
+                        <td><span id="calda_{{ forloop.counter }}" name="calda_{{ forloop.counter }}" readonly>{{ ficha.caldaInput|default:''|floatformat:2 }}</span></td>
+                    </tr>
+                {% endfor %}
+              <tr>
+                <td colspan="4"></td>
+                <td>Total:</td>
+                <td><span id="totalArea">{{ficha.totalArea|floatformat:2}}</span></td>
+                <td><span id="totalAreaAplicada">{{ficha.totalAreaAp|floatformat:2}}</span></td>
+                <td><span id="totalCalda">{{ficha.totalCalda|floatformat:2}}</span></td>
+              </tr>
+          </tbody>
+        </table>
+        <div style="border: 1px solid black; margin-left: 80px; margin-top: 17px; min-width:800px; word-wrap: break-word;">
+          <p style="margin-top:12px;">
+              <span type="text" id="id_obs" placeholder="Nenhuma Regulagem...">
+                  Regulagem: {{ ficha.obs }}</span><br><br>
+          </p>
+      </div>
+    </div>
+  </div>
+  <div class="info ">
+    <p>Vazão: <span type="numeric" id="volume" name="volume" value="">{{ ficha.volume }}</span>
+    </p>
+      <p> Capacidade do Tanque: <span type="numeric" id="cap" name="cap" value="">{{ ficha.capacidade }}</span>
+      </p>
+  </div>
+  <table class="tabela1">
+    <table>
+      <thead>
+        <tr>
+          <td colspan="3" style = "border: none;"></td>
+          <td {% if ficha.tipo_aplicacao.nome_tipo == 'Pulverizador' %}style="background-color: #f2f2f2;"{% endif %}
+            ><span id="tqn1" name="tqn1" >{{ ficha.tqn1|floatformat:2|default:'-' }}</span></td>
+          <td {% if ficha.tipo_aplicacao.nome_tipo == 'Pulverizador' %}style="background-color: #f2f2f2;"{% endif %}
+            ><span id="tqn2" name="tqn2" >{{ ficha.tqn2|floatformat:2|default:'-' }}</span></td>
+          <td {% if ficha.tipo_aplicacao.nome_tipo == 'Pulverizador' %}style="background-color: #f2f2f2;"{% endif %}
+            ><span id="tqn3" name="tqn3" >{{ ficha.tqn3|floatformat:2|default:'-' }}</span></td>
+        </tr>
+      </thead>
+      <tbody>
+          <tr style = "background-color: #e0e0e0;">
+            <td>#</td>
+            <td>Produto</td>
+            <td>Dose(Kg ou L/Ha)</td>
+            <td>Tanque 01 (L)</td>
+            <td>Tanque 02 (L)</td>
+            <td>Tanque 03 (L)</td>
+            <td>Consumo Prev.(Kg ou L/Ha)</td>
+            <td>Consumo Total</td>
+          </tr>
+      <tbody>
+        {% for fi in ficha.dados %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            <span class="campo-selecao"> {{ fi.nome_produto|default:'' }}{% if ficha.produto %} - ({{ ficha.produto }}){% endif %} </span>
+          </td>
+          <td>
+            <span>{{ fi.dose|floatformat:2 }} {% if fi.dose %}Kg ou L{% endif %}</span>
+          </td>
+          <td {% if ficha.tipo_aplicacao.nome_tipo == 'Pulverizador' %}style="background-color: #f2f2f2;"{% endif %}>
+            <span><strong>{{ fi.tanque1|floatformat:2 }}</strong> </span>
+          </td>
+          <td {% if ficha.tipo_aplicacao.nome_tipo == 'Pulverizador' %}style="background-color: #f2f2f2;"{% endif %}>
+            <span><strong>{{ fi.tanque2|floatformat:2 }}</strong> </span>
+          </td>
+          <td {% if ficha.tipo_aplicacao.nome_tipo == 'Pulverizador' %}style="background-color: #f2f2f2;"{% endif %}>
+            <span><strong>{{ fi.tanque3|floatformat:2 }}</strong> </span>
+          </td >
+          <td style = "background-color: #f2f2f2;">
+            <span><strong>{{ fi.previsto|floatformat:2 }}</strong> </span>
+          </td>
+          <td>
+            <span>{{ fi.total|floatformat:2 }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  <div class="assinatura">
+    <img
+      src="{% static '/todos/images/assinaturar.png' %}"
+      alt="Logo da Empresa"
+      class="ass"
+    />
+  </div>
+
+  <!-- Conteúdo da página continua aqui -->
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+  <script defer>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Seu código JavaScript/jQuery aqui...
+    });
+  </script>
+</body>

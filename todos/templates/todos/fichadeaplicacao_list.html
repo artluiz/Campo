@@ -1,0 +1,153 @@
+{% extends "base.html" %} {% load crispy_forms_tags %}
+
+{% block page_title %} Histórico {% endblock page_title %}
+
+{% block content %}
+  <style>
+  th {
+    text-align: center;
+  }
+  td {
+    text-align: center;
+  }
+  </style>
+  <script src="https://kit.fontawesome.com/ae773d5972.js" crossorigin="anonymous"></script>
+  <form method="get" action="{% url 'ficha_filtro' %}" class="form-inline mt-3" fixed-form>
+  <div class="input-group input-group-lg">
+    <label class="input-group-text" id="basic-addon1" for="start_date" style="min-width: 210px; max-width: 250px;">Data de início:</label>
+    <input type="date" id="start_date" name="start_date" class="form-control" style="max-width: 500px;">
+
+    <label class="input-group-text" id="basic-addon2" for="end_date" style="min-width: 210px; max-width: 250px;">Data de término:</label>
+    <input type="date" id="end_date" name="end_date" class="form-control" style="max-width: 500px;">
+    
+    <label class="input-group-text" id="basic-addon1" for="atividade_filter" style="min-width: 210px; max-width: 250px;">Filtrar por Atividade:</label>
+    <select id="atividade_filter" name="atividade_filter" class="form-control" style="max-width: 500px;">
+      <option value="" selected>Selecione uma Atividade</option>
+      {% for atividade in atividades %}
+          <option value="{{ atividade.id }}">{{ atividade.nome }}</option>
+      {% endfor %}
+    </select>
+    <label class="input-group-text" id="basic-addon1" for="plantio_filter" style="min-width: 210px; max-width: 250px;">Filtrar por Plantio:</label>
+    <select id="plantio_filter" name="plantio_filter" class="form-control" style="max-width: 500px;">
+      <option value="" selected>Selecione um Plantio</option>
+      {% for plantio in plantios %}
+        <option value="{{ plantio.nome_pl }}">{{ plantio.nome_pl }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="input-group input-group-lg">
+  <label class="input-group-text" id="basic-addon1" for="status_filter" style="min-width: 210px; max-width: 250px;">Filtrar por Status:</label>
+    <select class="form-select" id="status_filter"  name="status_filter" style="max-width: 500px;">
+        <option value="" selected>Selecione um Status</option>
+        <option value="true" {% if request.GET.status_filter == 'true' %}selected{% endif %}>Pendente</option>
+        <option value="false" {% if request.GET.status_filter == 'false' %}selected{% endif %}>Concluída</option>
+    </select>
+  </div>
+  <div class="input-group input-group-lg">
+    <button type="submit" class="btn btn-primary btn " >Filtrar</button>
+    <button type="submit" class="btn btn-secondary btn" formaction="{% url 'ficha_filtro_relatorio' %}">Relatório</button>
+  </div>
+  </form>
+  {% if fichacampo_list %}
+  <table class="table fs-5 mt-3">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Data de Aplicação</th>
+        <th scope="col">Atividade</th>
+        <th scope="col">Aplicação</th>
+        <th scope="col">Concluído</th> 
+        <th scope="col">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ficha in fichacampo_list %}
+      <tr>
+        <th scope="row">E{{ ficha.pk }}</th>
+        <td>{{ ficha.data_aplicada }}</td>
+        <td>{{ ficha.atividade.nome }}</td>
+        <td>{{ ficha.tipo_aplicacao.nome_tipo }}</td>
+        <td>
+          <input type="checkbox" class="ativo-checkbox" data-item-id="{{ ficha.pk }}" {% if ficha.pendente %}checked{% endif %}>
+        </td>
+        <td>
+          <label for="btn-edit_{{ forloop.counter }}" class="btn btn-secondary">
+            Editar
+            <input type="button" onclick="location.href='{% url 'ficha_update' pk=ficha.pk %}';" id="btn-edit_{{ forloop.counter }}" style="display: none;">
+          </label>
+          <input type="checkbox" class="btn-check" id="btn-check_{{ forloop.counter }}" data-item-id="{{ ficha.pk }}" {% if ficha.ativo %}checked{% endif %}>
+          <label class="btn {% if ficha.ativo %}btn-danger{% else %}btn-success{% endif %}" id="btn-label_{{ ficha.pk }}" for="btn-check_{{ forloop.counter }}">{% if ficha.ativo %} Cancelar {% else %}Ativar{% endif %}</label>
+          
+          <a href="{% url 'ficha_view' pk=ficha.pk %}"class="fa-solid fa-eye ms-4" style="text-decoration:none"></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>Não há fichas cadastradas</p>
+  {% endif %}
+  <a href="{% url "home_page"%}" class="btn btn-primary btn-lg"> Cadastrar Ficha</a>
+
+  <script>
+    $(document).ready(function () {
+      $('.ativo-checkbox').on('change', function () {
+        var checkbox = $(this);
+        var fichaPk = checkbox.data('item-id');
+        var row = checkbox.closest('tr');  // Obtemos o elemento pai da checkbox (a linha da tabela)
+
+        $.ajax({
+          type: 'PUT',
+          url: '/ficha/toggle_p/' + fichaPk,
+          data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+          dataType: 'json',
+          success: function (data) {
+            // Atualizar interface do usuário conforme necessário
+            console.log('Status: sucesso');
+            checkbox.prop('checked', data.pendente);
+
+            // Exemplo: Destacar a linha quando a checkbox é marcada
+            if (data.pendente) {
+                row.addClass('marked-row');
+            } else {
+                row.removeClass('marked-row');
+            }
+          },
+          error: function (data) {
+              console.log('Erro:', data);
+          }
+        });
+      });
+
+      $('.btn-check').change(function() {
+        var checkbox = $(this);
+        var pk = checkbox.data('item-id');
+        var label = $("#btn-label_" + pk);  // Obtemos o elemento label correspondente
+
+        $.ajax({
+          url: '/ficha/toggle/' + pk,
+          type: 'post',
+          data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+          dataType: 'json',
+          success: function (data) {
+            // Atualizar interface do usuário conforme necessário
+            console.log('Status: sucesso');
+            checkbox.prop('checked', data.ativo);
+
+            // Alterar a cor do botão
+            if (data.ativo) {
+              label.removeClass('btn-success').addClass('btn-danger');
+              label.text(' Cancelar ');
+            } else {
+              label.removeClass('btn-danger').addClass('btn-success');
+              label.text('Ativar');
+            }
+          },
+          error: function (data) {
+            console.log('Erro:', data);
+          }
+        });
+      });
+    });
+  </script>
+  {% endblock content %}

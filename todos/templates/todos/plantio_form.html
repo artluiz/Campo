@@ -1,0 +1,15 @@
+{% extends "base.html" %} {% load crispy_forms_tags %} {% block page_title %}
+Plantios {% endblock page_title %} {% block content %} {% if plantio.pk %}
+<h1>Alterar plantio</h1>
+{% else %}
+<h1>Nova plantio</h1>
+{% endif %}
+
+<form method="POST" class="uniForm">
+  {% csrf_token%} {{form|crispy}}
+  <button type="submit" class="btn btn-primary btn-lg">Salvar</button>
+</form>
+
+<a href="{% url "plantio_list"%}" class="btn btn-secondary btn-lg"> Voltar</a>
+
+{% endblock content %}
